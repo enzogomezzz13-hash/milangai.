@@ -333,16 +333,17 @@ if pregunta:
                     api_key=st.secrets["GROQ_API_KEY"]
                 )
 
-                respuesta = cliente.chat.completions.create(
-                    model="openai/gpt-oss-120b",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": SYSTEM_PROMPT
-                        },
-                        *historial
-                    ]
-                )
+                
+respuesta = cliente.chat.completions.create(
+    model="openai/gpt-oss-120b",
+    messages=[
+        {"role": "system", "content": SYSTEM_PROMPT},
+        *historial
+    ],
+    tools=[{"type": "browser_search"}],
+    citation_options="enabled"
+)
+
 
                 texto = respuesta.choices[0].message.content
                 st.markdown(texto)
