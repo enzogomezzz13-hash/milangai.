@@ -301,8 +301,8 @@ for mensaje in st.session_state.historial:
 pregunta = st.chat_input("Escribile a MilangAI...")
 
 
-  if pregunta:
-      historial = st.session_state.historial
+if pregunta:
+    historial = st.session_state.historial
       try:
           if not st.session_state.get("chat_id"):
               resultado = db.table("chats").insert({
