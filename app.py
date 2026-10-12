@@ -198,9 +198,12 @@ try:
     )
     chats = respuesta.data
 
-except Exception:
+
+except Exception as error:
     st.error("No se pudieron cargar tus conversaciones.")
+    st.code(str(error))
     st.stop()
+
 
 
 st.sidebar.title("💬 Mis chats")
