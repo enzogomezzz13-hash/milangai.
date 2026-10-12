@@ -136,6 +136,7 @@ if usuario is None:
             use_container_width=True
         )
 
+   
     if enviar:
         try:
             if not email.strip() or not password:
@@ -149,10 +150,8 @@ if usuario is None:
 
                 if resultado.session:
                     st.session_state.sesion = {
-                        "access_token":
-                            resultado.session.access_token,
-                        "refresh_token":
-                            resultado.session.refresh_token
+                        "access_token": resultado.session.access_token,
+                        "refresh_token": resultado.session.refresh_token
                     }
                     st.rerun()
                 else:
@@ -169,18 +168,16 @@ if usuario is None:
                 })
 
                 st.session_state.sesion = {
-                    "access_token":
-                        resultado.session.access_token,
-                    "refresh_token":
-                        resultado.session.refresh_token
+                    "access_token": resultado.session.access_token,
+                    "refresh_token": resultado.session.refresh_token
                 }
                 st.rerun()
 
         except Exception as error:
-        st.error(f"Error de autenticación: {error}")
-
+            st.error(f"Error de autenticación: {error}")
 
     st.stop()
+
 
 
 # Chat del usuario autenticado
