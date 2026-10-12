@@ -327,26 +327,22 @@ if pregunta:
         with st.chat_message("user"):
             st.markdown(pregunta)
 
-        with st.chat_message("assistant"):
-            with st.spinner("MilangAI está pensando..."):
-                cliente = Groq(
-                    api_key=st.secrets["GROQ_API_KEY"]
-                )
+        
+          with st.chat_message("assistant"):
+              with st.spinner("MilangAI está pensando..."):
+                  cliente = Groq(api_key=st.secrets["GROQ_API_KEY"])
+                  respuesta = cliente.chat.completions.create(
+                      model="openai/gpt-oss-120b",
+                      messages=[
+                          {"role": "system", "content": SYSTEM_PROMPT},
+                          *historial
+                      ],
+                      tools=[{"type": "browser_search"}],
+                      citation_options="enabled"
+                  )
+                  texto = respuesta.choices[0].message.content
+                  st.markdown(texto)
 
-                
-respuesta = cliente.chat.completions.create(
-    model="openai/gpt-oss-120b",
-    messages=[
-        {"role": "system", "content": SYSTEM_PROMPT},
-        *historial
-    ],
-    tools=[{"type": "browser_search"}],
-    citation_options="enabled"
-)
-
-
-                texto = respuesta.choices[0].message.content
-                st.markdown(texto)
 
         guardar_mensaje(
             db, usuario_id, chat_id, "assistant", texto
