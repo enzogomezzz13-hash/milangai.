@@ -176,12 +176,9 @@ if usuario is None:
                 }
                 st.rerun()
 
-        except Exception:
-            st.error(
-                "No se pudo completar el acceso. "
-                "Revisá los datos y la configuración "
-                "de autenticación de Supabase."
-            )
+        except Exception as error:
+        st.error(f"Error de autenticación: {error}")
+
 
     st.stop()
 
