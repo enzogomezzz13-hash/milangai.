@@ -338,8 +338,7 @@ if pregunta:
                         },
                         *historial
                     ],
-                    tools=[{"type": "browser_search"}],
-                    citation_options="enabled"
+                    tools=[{"type": "browser_search"}]
                 )
                 texto = respuesta.choices[0].message.content
                 st.markdown(texto)
