@@ -300,41 +300,42 @@ for mensaje in st.session_state.historial:
 
 pregunta = st.chat_input("Escribile a MilangAI...")
 
-if pregunta:
-    historial = st.session_state.historial
 
-    try:
-        # Crear un chat automáticamente si todavía no existe.
-        if not st.session_state.get("chat_id"):
-            resultado = db.table("chats").insert({
-                "user_id": usuario_id,
-                "titulo": pregunta[:60]
-            }).execute()
+  if pregunta:
+      historial = st.session_state.historial
+      try:
+          if not st.session_state.get("chat_id"):
+              resultado = db.table("chats").insert({
+                  "user_id": usuario_id,
+                  "titulo": pregunta[:60]
+              }).execute()
+              st.session_state.chat_id = resultado.data[0]["id"]
 
-            st.session_state.chat_id = resultado.data[0]["id"]
+          chat_id = st.session_state.chat_id
 
-        chat_id = st.session_state.chat_id
+          guardar_mensaje(
+              db, usuario_id, chat_id, "user", pregunta
+          )
+          historial.append({
+              "role": "user",
+              "content": pregunta
+          })
 
-        guardar_mensaje(
-            db, usuario_id, chat_id, "user", pregunta
-        )
+          with st.chat_message("user"):
+              st.markdown(pregunta)
 
-        historial.append({
-            "role": "user",
-            "content": pregunta
-        })
-
-        with st.chat_message("user"):
-            st.markdown(pregunta)
-
-        
           with st.chat_message("assistant"):
               with st.spinner("MilangAI está pensando..."):
-                  cliente = Groq(api_key=st.secrets["GROQ_API_KEY"])
+                  cliente = Groq(
+                      api_key=st.secrets["GROQ_API_KEY"]
+                  )
                   respuesta = cliente.chat.completions.create(
                       model="openai/gpt-oss-120b",
                       messages=[
-                          {"role": "system", "content": SYSTEM_PROMPT},
+                          {
+                              "role": "system",
+                              "content": SYSTEM_PROMPT
+                          },
                           *historial
                       ],
                       tools=[{"type": "browser_search"}],
@@ -343,36 +344,32 @@ if pregunta:
                   texto = respuesta.choices[0].message.content
                   st.markdown(texto)
 
+          guardar_mensaje(
+              db, usuario_id, chat_id, "assistant", texto
+          )
+          historial.append({
+              "role": "assistant",
+              "content": texto
+          })
 
-        guardar_mensaje(
-            db, usuario_id, chat_id, "assistant", texto
-        )
+          chat_actual = next(
+              (c for c in chats if c["id"] == chat_id),
+              None
+          )
+          if chat_actual and chat_actual["titulo"] == "Nuevo chat":
+              db.table("chats").update({
+                  "titulo": pregunta[:60]
+              }).eq(
+                  "id", chat_id
+              ).eq(
+                  "user_id", usuario_id
+              ).execute()
 
-        historial.append({
-            "role": "assistant",
-            "content": texto
-        })
+          st.rerun()
 
-        # Actualizar el título con la primera pregunta.
-        chat_actual = next(
-            (c for c in chats if c["id"] == chat_id),
-            None
-        )
-
-        if chat_actual and chat_actual["titulo"] == "Nuevo chat":
-            db.table("chats").update({
-                "titulo": pregunta[:60]
-            }).eq(
-                "id", chat_id
-            ).eq(
-                "user_id", usuario_id
-            ).execute()
-
-        st.rerun()
-
-    except Exception:
-        st.error(
-            "Hubo un problema al guardar o generar "
-            "la respuesta. Revisá la conexión e intentá "
-            "nuevamente."
-        )
+      except Exception as error:
+          st.error(
+              "Hubo un problema al guardar o generar "
+              "la respuesta."
+          )
+          st.code(str(error))
